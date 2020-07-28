@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from typing import List, NamedTuple, Set, Dict
+import argparse
+import sys
 
 
 class Genre(NamedTuple):
@@ -72,12 +74,17 @@ def ivi_to_cvs(data: Dict[str, List[str]], path: str, header: List[str]) -> None
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--pages', type=int, default=1)
+    parser.add_argument('-r', '--result_file', type=str, default="ivi.csv")
+    parsed_args = parser.parse_args(sys.argv[1:])
+
     root = "https://www.ivi.ru"
     all_movies = {}
     ivi: List[Genre] = []
     genres = take_genres(root + '/movies')
     for i in genres:
-        movies = take_movies(root + i, 1)
+        movies = take_movies(root + i, parsed_args.pages)
         for new_key in movies.movies:
             all_movies[new_key] = []
         ivi.append(movies)
@@ -87,4 +94,4 @@ if __name__ == "__main__":
             if cur_key in movies_set.movies:
                 all_movies[cur_key].append(movies_set.genre)
 
-    ivi_to_cvs(all_movies, 'ivi.csv', ['Фильм', 'Ветви каталога'])
+    ivi_to_cvs(all_movies, parsed_args.result_file, ['Фильм', 'Ветви каталога'])
