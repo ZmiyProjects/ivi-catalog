@@ -25,5 +25,5 @@ python -m venv venv
 sourse venv/bin/activate
 pip install -r requirements.txt
 chmod u+x seeker.py
-python3 ./seeker.py
+python3 seeker.py
 ```
