@@ -1,16 +1,28 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from typing import Optional, List, NamedTuple, Set, Dict
-import lxml
+from typing import List, NamedTuple, Set, Dict
 
 
 class Genre(NamedTuple):
+    """
+    movies - перечень фильмов
+    genre - жанр всех фильмов из множества movies
+    """
     movies: Set[str]
     genre: str
 
 
 def take_movies(url: str, max_page: int) -> Genre:
+    """
+    Считывает в именованный кортеж Genre сведения о фильмах определённого жанра
+    :param url: адрес страницы с фильмами определённого жанра
+    :param max_page: максимальное количество страниц в рамках жанра, для которых будет получен перечень фильмов
+    например, если указано 2 -- будут считаны сведения первых двух страниц
+    :return: Возвращает именованный кортеж Genre
+    """
+    if max_page <= 0:
+        raise ValueError
     page_movies = set()
     page_num = 1
     while True:
@@ -28,6 +40,11 @@ def take_movies(url: str, max_page: int) -> Genre:
 
 
 def take_genres(url: str) -> List[str]:
+    """
+    Считывает перечень адресов имеющихся жанров с главной страницы ivi.ru
+    :param url: адрес главной страницы ivi.ru
+    :return: список с перечнем адресов страниц
+    """
     genres_list = []
     r = requests.get(url)
     for item in BeautifulSoup(r.text, 'lxml').find_all("div", class_="gallery__item"):
@@ -39,7 +56,13 @@ def take_genres(url: str) -> List[str]:
     return genres_list
 
 
-def ivi_to_cvs(data: Dict[str, List[str]], path: str, header: List[str]):
+def ivi_to_cvs(data: Dict[str, List[str]], path: str, header: List[str]) -> None:
+    """
+    Записывает данные из словаря в .csv файл
+    :param data: словарь с данными для записи
+    :param path: путь к файлу для записи
+    :param header: заголовки файла в формате массива
+    """
     with open(path, 'w') as writer:
         if header is not None:
             writer.write(';'.join(header))
@@ -56,13 +79,10 @@ if __name__ == "__main__":
         for j in take:
             all_movies[j] = []
         ivi.append(Genre(take, g))
-    for i in ivi:
-        print(i)
-    print(all_movies)
+
     for i in all_movies.keys():
         for j in ivi:
             if i in j.movies:
                 all_movies[i].append(j.genre)
-    for i, j in all_movies.items():
-        print(i, j)
+
     ivi_to_cvs(all_movies, 'ivi.csv', ['Фильм', 'Ветви каталога'])
