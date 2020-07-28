@@ -27,7 +27,8 @@ def take_movies(url: str, max_page: int) -> Genre:
     page_num = 1
     while True:
         r = requests.get(url + f"/page{page_num}")
-        page = BeautifulSoup(r.text, 'lxml').find_all("img", class_="nbl-poster__image")
+        catalog = BeautifulSoup(r.text, 'lxml')
+        page = catalog.find_all("img", class_="nbl-poster__image")
         if not page:
             break
         else:
@@ -36,7 +37,8 @@ def take_movies(url: str, max_page: int) -> Genre:
             page_num += 1
             if page_num > max_page:
                 break
-    return Genre(page_movies, url.replace('https://www.ivi.ru/movies/', ''))
+    ru_genre = catalog.find('meta', attrs={'name': 'keywords'}).get("content").split(', ')[1]
+    return Genre(page_movies, ru_genre)
 
 
 def take_genres(url: str) -> List[str]:
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     ivi: List[Genre] = []
     genres = take_genres(root + '/movies')
     for i in genres:
-        movies = take_movies(root + i, 2)
+        movies = take_movies(root + i, 1)
         for new_key in movies.movies:
             all_movies[new_key] = []
         ivi.append(movies)
