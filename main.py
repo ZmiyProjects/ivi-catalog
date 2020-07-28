@@ -75,14 +75,14 @@ if __name__ == "__main__":
     ivi: List[Genre] = []
     genres = take_genres(root + '/movies')
     for i in genres:
-        take, g = take_movies(root + i, 1)
-        for j in take:
-            all_movies[j] = []
-        ivi.append(Genre(take, g))
+        movies = take_movies(root + i, 2)
+        for new_key in movies.movies:
+            all_movies[new_key] = []
+        ivi.append(movies)
 
-    for i in all_movies.keys():
-        for j in ivi:
-            if i in j.movies:
-                all_movies[i].append(j.genre)
+    for cur_key in all_movies.keys():
+        for movies_set in ivi:
+            if cur_key in movies_set.movies:
+                all_movies[cur_key].append(movies_set.genre)
 
     ivi_to_cvs(all_movies, 'ivi.csv', ['Фильм', 'Ветви каталога'])
