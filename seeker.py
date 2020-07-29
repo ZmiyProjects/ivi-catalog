@@ -67,7 +67,7 @@ def ivi_to_cvs(data: Dict[str, List[str]], path: str, header: List[str]) -> None
     :param path: путь к файлу для записи
     :param header: заголовки файла в формате массива
     """
-    with open(path, 'w') as writer:
+    with open(path, 'w', encoding='utf-8') as writer:
         if header is not None:
             writer.write(';'.join(header))
         writer.writelines(f"\n{key};{','.join(values)}" for key, values in data.items())
@@ -81,17 +81,13 @@ if __name__ == "__main__":
 
     root = "https://www.ivi.ru"
     all_movies = {}
-    ivi: List[Genre] = []
     genres = take_genres(root + '/movies')
     for i in genres:
         movies = take_movies(root + i, parsed_args.pages)
         for new_key in movies.movies:
-            all_movies[new_key] = []
-        ivi.append(movies)
-
-    for cur_key in all_movies.keys():
-        for movies_set in ivi:
-            if cur_key in movies_set.movies:
-                all_movies[cur_key].append(movies_set.genre)
+            if new_key in all_movies:
+                all_movies[new_key].append(movies.genre)
+            else:
+                all_movies[new_key] = [movies.genre]
 
     ivi_to_cvs(all_movies, parsed_args.result_file, ['Фильм', 'Ветви каталога'])
